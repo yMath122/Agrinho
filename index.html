@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agrinhho - Projeto</title>
+    <link rel="icon" type="image/png" href="batata.ico">
+
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background:#a8e063;
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: none;
+        }
+
+        button:hover {
+            background-color: #4CAF50;
+        }
+
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #buyWorker {
+            margin-top: 15px;
+            background-color: #ff9800;
+        }
+
+        #buyWorker:hover {
+            background-color: #e68900;
+        }
+
+        #progress-container {
+  width: 100%;
+  height: 20px;
+  background-color: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+#progress-bar {
+  width: 0%; /* começa vazia */
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.5s ease;
+}
+
+
+        /* Abas da loja */
+        #shopTabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tabButton {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: none;
+        }
+
+        .tabButton:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .tabButton.active {
+            background-color: #388E3C;
+            /* um tom um pouco mais escuro se quiser destacar */
+        }
+
+
+        .shopTab {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        #truck {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #FF9800;
+        }
+
+        .truck-animation {
+            position: absolute;
+            top: 50%;
+            left: -100px;  /* Começa fora da tela */
+            transform: translateY(-50%);
+            transition: left 6s linear; /* Move o caminhão para a direita */
+        }
+
+        #finalMessage {
+            font-size: 28px;
+            color: #FF5722;
+            margin-top: 20px;
+            display: none;
+        }
+        @media screen and (max-width: 600px) {
+    .container {
+        width: 90%;
+    }
+}
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Da Roça à Cidade 🌾🏙️</h1>
+        <p id="stageText">Estágio: Plantando Batatas</p>
+        <p id="count">Batatas: 0</p>
+        <button id="plantBtn">Plantar</button>
+        <button id="toggleShop">🛍️ Abrir Loja</button>
+        <!-- Adicione isso logo abaixo do stageText -->
+        <div id="progressBarContainer">
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+              </div>
+              
+            <button id="infoBtn" style="margin-top: 15px;">📊 Ver Informações</button>
+            <div id="infoPanel" style="display:none; text-align: left; margin-top: 10px;">
+                <p id="infoTime"></p>
+                <p id="infoTotal"></p>
+                <p id="infoUpgrades"></p>
+            </div>
+
+        </div>
+
+
+
+        <div id="shop" style="display: none; margin-top: 20px;">
+            <!-- Abas -->
+            <div id="shopTabs">
+                <button class="tabButton active" data-tab="auto">🛠️ Automação</button>
+                <button class="tabButton" data-tab="general">🧪 Melhorias</button>
+            </div>
+
+            <!-- Conteúdo da loja: automação -->
+            <div class="shopTab" id="autoTab">
+                <p id="workerInfo">👨‍🌾 Trabalhadores: 0 | Plantios/s: 0 | Custo: 50</p>
+                <button id="buyWorker">👨‍🌾 Comprar Trabalhador</button><br><br>
+
+                <p id="tractorInfo">🚜 Tratores: 0 | Custo: 1000</p>
+                <button id="buyTractor">🚜 Comprar Trator</button><br><br>
+
+
+
+            </div>
+
+            <!-- Conteúdo da loja: melhorias -->
+            <div class="shopTab" id="generalTab" style="display: none;">
+
+                <p id="irrigationInfo">💧 Irrigação: Disponível | Custo: 2500 </p>
+                <button id="buyIrrigation">💧 2x de recursos gerados.</button>
+
+                <p id="fertilizerInfo">🌿 Fertilizante: Disponível | Custo: 5000</p>
+                <button id="buyFertilizer">🌿 3x de recursos por click.</button>
+
+                <p id="harvesterInfo">🚛 Colheitadeira: Disponível | Custo: 5000</p>
+                <button id="buyHarvester">🚛 2x velocidade de automação.</button><br><br>
+            </div>
+        </div>
+        <button id="cheatBtn" style="margin-top: 20px; background-color: #9C27B0; display:none">💰 Ativar Cheat
+            (Adicionar
+            10000)</button>
+
+
+    </div>
+
+    <script>
+        let count = 0;
+        let stage = 0;
+
+
+
+        const infoBtn = document.getElementById("infoBtn");
+        const infoPanel = document.getElementById("infoPanel");
+        const infoTime = document.getElementById("infoTime");
+        const infoTotal = document.getElementById("infoTotal");
+        const infoUpgrades = document.getElementById("infoUpgrades");
+
+        infoBtn.addEventListener("click", () => {
+            const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+
+            infoTime.textContent = `🕒 Tempo de jogo: ${minutes}m ${seconds}s`;
+            infoTotal.textContent = `🌱 Recursos totais coletados: ${Math.floor(totalResources)}`;
+            infoUpgrades.textContent = `🔧 Melhorias compradas: ${totalUpgrades}`;
+
+            infoPanel.style.display = infoPanel.style.display === "none" ? "block" : "none";
+        });
+
+        let workers = 0;
+        let workerCost = 50;
+        let tractors = 0;
+        let tractorCost = 1000;
+        let irrigationBought = false;
+        let fertilizerBought = false;
+        let harvesterBought = false;
+
+        const stages = [
+            { name: "Batatas", nextAt: 1000 },
+            { name: "Cenouras", nextAt: 6000 },
+            { name: "Milhos", nextAt: 11000 },
+            { name: "Tomates", nextAt: 16000 },
+            { name: "Trigo", nextAt: 21000 },
+            { name: "Soja", nextAt: 26000 },
+            { name: "Maçãs", nextAt: 31000 },
+            { name: "Uvas", nextAt: 36000 },
+            { name: "Girassóis", nextAt: 41000 },
+            { name: "Pomares", nextAt: 46000 },
+            { name: "Mega Fazenda", nextAt: 55000 },
+            { name: "Ir para a Cidade!", nextAt: null }
+        ];
+
+        let totalResources = 0;
+        let totalUpgrades = 0;
+        let gameStartTime = Date.now();
+
+
+        const progressBar = document.getElementById("progressBar");
+        const toggleShopBtn = document.getElementById("toggleShop");
+        const shop = document.getElementById("shop");
+
+        toggleShopBtn.addEventListener("click", () => {
+            shop.style.display = shop.style.display === "none" ? "block" : "none";
+            toggleShopBtn.textContent = shop.style.display === "none" ? "🛍️ Abrir Loja" : "❌ Fechar Loja";
+        });
+
+        window.addEventListener("beforeunload", () => {
+            localStorage.setItem("count", count);
+            localStorage.setItem("totalResources", totalResources);
+            localStorage.setItem("totalUpgrades", totalUpgrades);
+            localStorage.setItem("workers", workers);
+            localStorage.setItem("tractors", tractors);
+localStorage.setItem("stage", stage);
+
+        });
+
+        window.addEventListener("load", () => {
+            count = 0;
+localStorage.removeItem("count");
+
+            totalResources = parseFloat(localStorage.getItem("totalResources")) || 0;
+            totalUpgrades = parseInt(localStorage.getItem("totalUpgrades")) || 0;
+            tractors = parseInt(localStorage.getItem("tractors")) || 0;
+stage = parseInt(localStorage.getItem("stage")) || 0;
+
+            updateDisplay();
+        });
+
+        const stageBonuses = [
+            { name: "Batatas", bonus: 1 },
+            { name: "Cenouras", bonus: 1.1 },
+            { name: "Milhos", bonus: 1.2 },
+            { name: "Tomates", bonus: 1.3 },
+            { name: "Trigo", bonus: 1.4 },
+            { name: "Arroz", bonus: 1.5 },
+            { name: "Lavoura Moderna", bonus: 1.6 },
+            { name: "Fazenda Automatizada", bonus: 1.8 },
+            { name: "Indústria Agrícola", bonus: 2 },
+            { name: "Cidade", bonus: 2.5 }
+        ];
+
+
+
+        const countDisplay = document.getElementById("count");
+        const stageText = document.getElementById("stageText");
+        const plantBtn = document.getElementById("plantBtn");
+        const buyWorkerBtn = document.getElementById("buyWorker");
+        const workerInfo = document.getElementById("workerInfo");
+
+        const buyTractorBtn = document.getElementById("buyTractor");
+        const tractorInfo = document.getElementById("tractorInfo");
+
+        const buyIrrigationBtn = document.getElementById("buyIrrigation");
+        const irrigationInfo = document.getElementById("irrigationInfo");
+
+        const buyFertilizerBtn = document.getElementById("buyFertilizer");
+        const fertilizerInfo = document.getElementById("fertilizerInfo");
+
+        plantBtn.addEventListener("click", () => {
+    let clickValue = 1;
+    if (fertilizerBought) clickValue *= 3;
+    let phaseBonus = stageBonuses[stage]?.bonus || 1;
+    clickValue *= phaseBonus;
+    count += clickValue;
+    totalResources += clickValue;
+    updateDisplay();
+    checkProgress();
+});
+
+
+        buyWorkerBtn.addEventListener("click", () => {
+            if (count >= workerCost) {
+                count -= workerCost;
+                workers++;
+                workerCost = Math.floor(workerCost * 1.5);
+                updateDisplay();
+            }
+        });
+
+        buyTractorBtn.addEventListener("click", () => {
+            if (count >= tractorCost) {
+                count -= tractorCost;
+                tractors++;
+                tractorCost = Math.floor(tractorCost * 1.5);
+                updateDisplay();
+            }
+        });
+
+        buyIrrigationBtn.addEventListener("click", () => {
+            if (!irrigationBought && count >= 3000) {
+                count -= 3000;
+                irrigationBought = true;
+                updateDisplay();
+            }
+        });
+
+        buyFertilizerBtn.addEventListener("click", () => {
+            if (!fertilizerBought && count >= 5000) {
+                count -= 5000;
+                fertilizerBought = true;
+                updateDisplay();
+            }
+        });
+
+        const buyHarvesterBtn = document.getElementById("buyHarvester");
+        const harvesterInfo = document.getElementById("harvesterInfo");
+
+        buyHarvesterBtn.addEventListener("click", () => {
+            if (!harvesterBought && count >= 5000) {
+                count -= 5000;
+                harvesterBought = true;
+                updateDisplay();
+            }
+        });
+
+
+        setInterval(() => {
+            let workerGain = workers;
+            let tractorGain = tractors * 10;
+
+            if (harvesterBought) {
+                workerGain *= 2;
+                tractorGain *= 2;
+            }
+
+            let autoGain = workerGain + tractorGain;
+
+            if (irrigationBought) autoGain *= 2;
+
+
+            count += autoGain;
+            totalResources += autoGain;
+
+
+            let phaseBonus = stageBonuses[stage]?.bonus || 1;
+            autoGain *= phaseBonus;
+
+
+            updateDisplay();
+            checkProgress();
+        }, 1000);
+
+
+
+
+        function updateDisplay() {
+            countDisplay.textContent = `${stages[stage].name}: ${Math.floor(count)}`;
+            workerInfo.textContent = `👨‍🌾 Trabalhadores: ${workers} | Plantios/s: ${workers} | Custo: ${workerCost}`;
+            tractorInfo.textContent = `🚜 Tratores: ${tractors} | +${tractors * 10}/s | Custo: ${tractorCost}`;
+            irrigationInfo.textContent = irrigationBought ? "💧 Sistema de Irrigação: Ativado" : "💧 Irrigação: Disponível | Custo: 3000";
+            fertilizerInfo.textContent = fertilizerBought ? "🌿 Fertilizante: Ativado" : "🌿 Fertilizante: Disponível | Custo: 5000";
+            harvesterInfo.textContent = harvesterBought ? "🚛 Colheitadeira: Ativada" : "🚛 Colheitadeira: Disponível | Custo: 5000";
+
+
+        
+        }
+
+       
+        // Alternar abas da loja
+        const tabButtons = document.querySelectorAll(".tabButton");
+        const shopTabs = {
+            auto: document.getElementById("autoTab"),
+            general: document.getElementById("generalTab")
+        };
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const selected = btn.getAttribute("data-tab");
+
+                // Ativar/desativar abas
+                Object.keys(shopTabs).forEach(tab => {
+                    shopTabs[tab].style.display = (tab === selected) ? "block" : "none";
+                });
+
+                // Ativar/desativar botões
+                tabButtons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+            });
+        });
+
+
+    </script>
+
+    <!--Cheat temporario-->
+    <script>
+        const cheatBtn = document.getElementById("cheatBtn");
+
+        cheatBtn.addEventListener("click", () => {
+            count += 10000;
+            updateDisplay();
+            checkProgress();
+        });
+
+    </script>
+    <script>
+  function checkProgress() {
+    const currentStage = stages[stage];
+
+    if (currentStage.nextAt !== null && count >= currentStage.nextAt) {
+        stage++;
+        count = 0;
+        stageText.textContent = `Estágio: ${stages[stage].name}`;
+        updateDisplay();
+
+        // Última fase atingida
+        if (stages[stage].nextAt === null) {
+            plantBtn.textContent = "Indo para a cidade... 🚚";
+            plantBtn.disabled = true;
+            buyWorkerBtn.disabled = true;
+            buyTractorBtn.disabled = true;
+            buyIrrigationBtn.disabled = true;
+            buyFertilizerBtn.disabled = true;
+            buyHarvesterBtn.disabled = true;
+
+            // Criar mensagem inicial
+            const truckDiv = document.createElement("div");
+            truckDiv.id = "truck";
+            truckDiv.textContent = "🚚 Indo para a cidade...";
+            truckDiv.style.fontSize = "26px";
+            truckDiv.style.marginTop = "30px";
+            truckDiv.style.color = "#FFA000";
+            truckDiv.style.fontFamily = "'Segoe UI', sans-serif";
+            truckDiv.style.fontWeight = "bold";
+            truckDiv.style.textShadow = "1px 1px 2px #333";
+            truckDiv.style.textAlign = "center";
+            document.body.appendChild(truckDiv);
+
+            // Caminhão animado
+            const truck = document.createElement("div");
+            truck.style.position = "absolute";
+            truck.style.left = "-100px";
+            truck.style.top = "50%";
+            truck.style.transform = "translateY(-50%)";
+            truck.style.transition = "left 6s linear";
+            truck.style.fontSize = "64px";
+            truck.innerHTML = "🚚";
+            document.body.appendChild(truck);
+
+            // Iniciar movimento
+            setTimeout(() => {
+                truck.style.left = "100vw";
+            }, 100);
+
+            // Após a animação do caminhão
+            setTimeout(() => {
+                truckDiv.textContent = "🏙️ Chegando à cidade!";
+                truckDiv.style.color = "#4CAF50";
+                truckDiv.style.fontSize = "28px";
+
+                setTimeout(() => {
+                    truckDiv.textContent = "🎉 Parabéns! Você chegou à cidade e conquistou o jogo!";
+                    truckDiv.style.color = "#FF5722";
+                    truckDiv.style.fontSize = "30px";
+                    truckDiv.style.textShadow = "2px 2px 4px #000";
+                }, 2000);
+            }, 6000);
+        }
+    }
+}
+
+
+    </script>
+    
+
+</body>
+
+</html>
