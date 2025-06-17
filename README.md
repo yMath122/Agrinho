@@ -11,3 +11,13 @@ Para visualizar e editar este projeto corretamente, certifique-se de ter instala
 ## Instalação
 1. Baixe o repositório ou clone-o usando:
 git clone https://github.com/seu-repositorio/agrinho-do-campo.git
+
+2. Acesse a pasta do projeto:
+cd agrinho-maycon
+
+## Uso
+Para abrir o projeto no **Visual Studio Code**, siga os passos:
+1. Abra o **Visual Studio Code**.
+2. Vá em **File** > **Open Folder** e selecione o diretório do projeto `Agrinho Maycon`.
+3. Execute o arquivo `index.html` diretamente no navegador.
+
